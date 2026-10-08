@@ -1,0 +1,756 @@
+# Demon's Souls section of the RPCS3 patch database (https://rpcs3.net/compatibility?patch).
+# Authors are credited per patch. Refresh with demons_souls/tools/update_patches.py.
+Version: 1.2
+
+Anchors:
+  BLUS30443_FpsUnlock: &BLUS30443_FpsUnlock
+  # Set 60 FPS with no frameskip
+  # by Gibbed
+    - [ be16, 0x00025ed8, 0x981f ]
+  # delta time
+  # by Whatcookie
+    - [ be32, 0x0001b964, 0x496ac2cd ] # jump to code cave
+  # get mftb
+    - [ be32, 0x016c7c30, 0x7eac42e6 ] # mftb r21              // move from timebase register (clock)
+  # get mftb delta
+    - [ be32, 0x016c7c34, 0x3ec00185 ] # lis r22,0x0185        // load high bits of address
+    - [ be32, 0x016c7c38, 0x3ad62608 ] # addi r22,r22,0x2608   // load low bits of address
+    - [ be32, 0x016c7c3c, 0x7e96a02a ] # ldx r20,r22,r20       // load previous frames mftb reading
+    - [ be32, 0x016c7c40, 0xfab60000 ] # std r21,0x0(r22)      // store this frames mftb reading
+    - [ be32, 0x016c7c44, 0x7e74a850 ] # subf r19,r21,r20      // subtract previous mftb reading from this mftb frames reading
+  # mftb delta to float
+    - [ be32, 0x016c7c48, 0xfa760018 ] # std r19,0x18(r22)     // store mftb delta (to be loaded into FPR)
+    - [ be32, 0x016c7c4c, 0xcbd60018 ] # lfd f30,0x18(r22)     // load mftb delta into FPR
+    - [ be32, 0x016c7c50, 0xffc0f69c ] # fcfid f30,f30         // convert integer to double
+    - [ be32, 0x016c7c54, 0xffc0f018 ] # frsp f30,f30          // round to single precision
+  # mftb delta to seconds
+    - [ be32, 0x016c7c58, 0x3e40016c ] # r18,0x16c             // load high bits constants pointer
+    - [ be32, 0x016c7c5c, 0x3a527c30 ] # addi r18,r18,0x7c30   // load low bits of constants pointer
+    - [ be32, 0x016c7c60, 0xc3b20054 ] # lfs f29,0x54(r18)     // load timebase frequency constant
+    - [ be32, 0x016c7c64, 0xc3920058 ] # lfs f28,0x58(r18)     // load maximum timestep size
+    - [ be32, 0x016c7c68, 0xeffee824 ] # fdivs f31,f30,f29     // divide timebase delta by timebase frequency
+  # check timestep size
+    - [ be32, 0x016c7c6c, 0xff9fe000 ] # fcmpu cr7,f31,f28     // compare current delta time to maximum timestep
+    - [ be32, 0x016c7c70, 0x419c0008 ] # blt +0x08             // don't return the maximum timestep size
+  # set maximum timestep
+    - [ be32, 0x016c7c74, 0xffe0e090 ] # fmr f31,f28           // move maximum timestep to be returned
+  # cleanup
+    - [ be32, 0x016c7c78, 0x7e94a278 ] # xor r20,r20,r20       // zero r20
+    - [ be32, 0x016c7c7c, 0x7e94a278 ] # xor r19,r19,r19       // zero r19
+    - [ be32, 0x016c7c80, 0x4e800020 ] # blr                   // return
+  # constants
+    - [ be32, 0x016c7c84, 0x4c989680 ] # timebase frequency as hexfloat (80mhz)
+    - [ bef32, 0x016c7c88, 0.05 ]      # maximum timestep size (50ms or 20 FPS)
+
+  BLES00932_FpsUnlock: &BLES00932_FpsUnlock
+  # Set 60 FPS with no frameskip
+  # by Gibbed
+    - [ be16, 0x00026ac0, 0x981f ]
+  # delta time
+  # by Whatcookie
+    - [ be32, 0x0001c534, 0x496ada1d ] # jump to code cave
+  # get mftb
+    - [ be32, 0x016c9f50, 0x7eac42e6 ] # mftb r21              // move from timebase register (clock)
+  # get mftb delta
+    - [ be32, 0x016c9f54, 0x3ec00185 ] # lis r22,0x0185        // load high bits of address
+    - [ be32, 0x016c9f58, 0x3ad62608 ] # addi r22,r22,0x2608   // load low bits of address
+    - [ be32, 0x016c9f5c, 0x7e96a02a ] # ldx r20,r22,r20       // load previous frames mftb reading
+    - [ be32, 0x016c9f60, 0xfab60000 ] # std r21,0x0(r22)      // store this frames mftb reading
+    - [ be32, 0x016c9f64, 0x7e74a850 ] # subf r19,r21,r20      // subtract previous mftb reading from this mftb frames reading
+  # mftb delta to float
+    - [ be32, 0x016c9f68, 0xfa760018 ] # std r19,0x18(r22)     // store mftb delta (to be loaded into FPR)
+    - [ be32, 0x016c9f6c, 0xcbd60018 ] # lfd f30,0x18(r22)     // load mftb delta into FPR
+    - [ be32, 0x016c9f70, 0xffc0f69c ] # fcfid f30,f30         // convert integer to double
+    - [ be32, 0x016c9f74, 0xffc0f018 ] # frsp f30,f30          // round to single precision
+  # mftb delta to seconds
+    - [ be32, 0x016c9f78, 0x3e40016c ] # r18,0x16c             // load high bits constants pointer
+    - [ be32, 0x016c9f7c, 0x62529f50 ] # ori r18,r18,0x9f50    // load low bits of constants pointer
+    - [ be32, 0x016c9f80, 0xc3b20054 ] # lfs f29,0x54(r18)     // load timebase frequency constant
+    - [ be32, 0x016c9f84, 0xc3920058 ] # lfs f28,0x58(r18)     // load maximum timestep size
+    - [ be32, 0x016c9f88, 0xeffee824 ] # fdivs f31,f30,f29     // divide timebase delta by timebase frequency
+  # check timestep size
+    - [ be32, 0x016c9f8c, 0xff9fe000 ] # fcmpu cr7,f31,f28     // compare current delta time to maximum timestep
+    - [ be32, 0x016c9f90, 0x419c0008 ] # blt +0x08             // don't return the maximum timestep size
+  # set maximum timestep
+    - [ be32, 0x016c9f94, 0xffe0e090 ] # fmr f31,f28           // move maximum timestep to be returned
+  # cleanup
+    - [ be32, 0x016c9f98, 0x7e94a278 ] # xor r20,r20,r20       // zero r20
+    - [ be32, 0x016c9f9c, 0x7e94a278 ] # xor r19,r19,r19       // zero r19
+    - [ be32, 0x016c9fa0, 0x4e800020 ] # blr                   // return
+  # constants
+    - [ be32, 0x016c9fa4, 0x4c989680 ] # timebase frequency as hexfloat (80mhz)
+    - [ bef32, 0x016c9fa8, 0.05 ]      # maximum timestep size (50ms or 20 FPS)
+
+  BCAS20071_FpsUnlock: &BCAS20071_FpsUnlock
+  # Set 60 FPS with no frameskip
+  # by Gibbed, KokutouKiritsugu port to BCAS20071
+    - [ be16, 0x00024148, 0x981f ]
+  # delta time
+  # by Whatcookie
+    - [ be32, 0x00019794, 0x496af37d ] # jump to code cave
+  # get mftb
+    - [ be32, 0x016c8b10, 0x7eac42e6 ] # mftb r21              // move from timebase register (clock)
+  # get mftb delta
+    - [ be32, 0x016c8b14, 0x3ec00185 ] # lis r22,0x0185        // load high bits of address
+    - [ be32, 0x016c8b18, 0x3ad62608 ] # addi r22,r22,0x2608   // load low bits of address
+    - [ be32, 0x016c8b1c, 0x7e96a02a ] # ldx r20,r22,r20       // load previous frames mftb reading
+    - [ be32, 0x016c8b20, 0xfab60000 ] # std r21,0x0(r22)      // store this frames mftb reading
+    - [ be32, 0x016c8b24, 0x7e74a850 ] # subf r19,r21,r20      // subtract previous mftb reading from this mftb frames reading
+  # mftb delta to float
+    - [ be32, 0x016c8b28, 0xfa760018 ] # std r19,0x18(r22)     // store mftb delta (to be loaded into FPR)
+    - [ be32, 0x016c8b2c, 0xcbd60018 ] # lfd f30,0x18(r22)     // load mftb delta into FPR
+    - [ be32, 0x016c8b30, 0xffc0f69c ] # fcfid f30,f30         // convert integer to double
+    - [ be32, 0x016c8b34, 0xffc0f018 ] # frsp f30,f30          // round to single precision
+  # mftb delta to seconds
+    - [ be32, 0x016c8b38, 0x3e40016c ] # r18,0x16c             // load high bits constants pointer
+    - [ be32, 0x016c8b3c, 0x62528b10 ] # ori r18,r18,0x8b10    // load low bits of constants pointer
+    - [ be32, 0x016c8b40, 0xc3b20054 ] # lfs f29,0x54(r18)     // load timebase frequency constant
+    - [ be32, 0x016c8b44, 0xc3920058 ] # lfs f28,0x58(r18)     // load maximum timestep size
+    - [ be32, 0x016c8b48, 0xeffee824 ] # fdivs f31,f30,f29     // divide timebase delta by timebase frequency
+  # check timestep size
+    - [ be32, 0x016c8b4c, 0xff9fe000 ] # fcmpu cr7,f31,f28     // compare current delta time to maximum timestep
+    - [ be32, 0x016c8b50, 0x419c0008 ] # blt +0x08             // don't return the maximum timestep size
+  # set maximum timestep
+    - [ be32, 0x016c8b54, 0xffe0e090 ] # fmr f31,f28           // move maximum timestep to be returned
+  # cleanup
+    - [ be32, 0x016c8b58, 0x7e94a278 ] # xor r20,r20,r20       // zero r20
+    - [ be32, 0x016c8b5c, 0x7e94a278 ] # xor r19,r19,r19       // zero r19
+    - [ be32, 0x016c8b60, 0x4e800020 ] # blr                   // return
+  # constants
+    - [ be32, 0x016c8b64, 0x4c989680 ] # timebase frequency as hexfloat (80mhz)
+    - [ bef32, 0x016c8b68, 0.05 ]      # maximum timestep size (50ms or 20 FPS)
+
+  BCJS30022_FpsUnlock: &BCJS30022_FpsUnlock
+  # Set 60 FPS with no frameskip
+  # by Gibbed, Hasster's port to BCJS30022
+    - [ be16, 0x000240d0, 0x981f ]
+  # delta time
+  # by Whatcookie
+    - [ be32, 0x00019794, 0x496af30d ] # jump to code cave
+  # get mftb
+    - [ be32, 0x016c8aa0, 0x7eac42e6 ] # mftb r21              // move from timebase register (clock)
+  # get mftb delta
+    - [ be32, 0x016c8aa4, 0x3ec00185 ] # lis r22,0x0185        // load high bits of address
+    - [ be32, 0x016c8aa8, 0x3ad62608 ] # addi r22,r22,0x2608   // load low bits of address
+    - [ be32, 0x016c8aac, 0x7e96a02a ] # ldx r20,r22,r20       // load previous frames mftb reading
+    - [ be32, 0x016c8ab0, 0xfab60000 ] # std r21,0x0(r22)      // store this frames mftb reading
+    - [ be32, 0x016c8ab4, 0x7e74a850 ] # subf r19,r21,r20      // subtract previous mftb reading from this mftb frames reading
+  # mftb delta to float
+    - [ be32, 0x016c8ab8, 0xfa760018 ] # std r19,0x18(r22)     // store mftb delta (to be loaded into FPR)
+    - [ be32, 0x016c8abc, 0xcbd60018 ] # lfd f30,0x18(r22)     // load mftb delta into FPR
+    - [ be32, 0x016c8ac0, 0xffc0f69c ] # fcfid f30,f30         // convert integer to double
+    - [ be32, 0x016c8ac4, 0xffc0f018 ] # frsp f30,f30          // round to single precision
+  # mftb delta to seconds
+    - [ be32, 0x016c8ac8, 0x3e40016c ] # r18,0x16c             // load high bits constants pointer
+    - [ be32, 0x016c8acc, 0x62528aa0 ] # ori r18,r18,0x8b10    // load low bits of constants pointer
+    - [ be32, 0x016c8ad0, 0xc3b20054 ] # lfs f29,0x54(r18)     // load timebase frequency constant
+    - [ be32, 0x016c8ad4, 0xc3920058 ] # lfs f28,0x58(r18)     // load maximum timestep size
+    - [ be32, 0x016c8ad8, 0xeffee824 ] # fdivs f31,f30,f29     // divide timebase delta by timebase frequency
+  # check timestep size
+    - [ be32, 0x016c8adc, 0xff9fe000 ] # fcmpu cr7,f31,f28     // compare current delta time to maximum timestep
+    - [ be32, 0x016c8ae0, 0x419c0008 ] # blt +0x08             // don't return the maximum timestep size
+  # set maximum timestep
+    - [ be32, 0x016c8ae4, 0xffe0e090 ] # fmr f31,f28           // move maximum timestep to be returned
+  # cleanup
+    - [ be32, 0x016c8ae8, 0x7e94a278 ] # xor r20,r20,r20       // zero r20
+    - [ be32, 0x016c8aec, 0x7e94a278 ] # xor r19,r19,r19       // zero r19
+    - [ be32, 0x016c8af0, 0x4e800020 ] # blr                   // return
+  # constants
+    - [ be32, 0x016c8af4, 0x4c989680 ] # timebase frequency as hexfloat (80mhz)
+    - [ bef32, 0x016c8af8, 0.05 ]      # maximum timestep size (50ms or 20 FPS)
+
+  DeS_FPS_Notes: &DeS_FPS_Notes
+    "Patch version 2.0 and above is not compatible with the settings used for the previous patch. Clocks scale and Vblank rate must be set to the defaults. Vblank rate can be modified to increase the framelimit beyond 60 FPS. However, it's not recommended as users may encounter physics issues."
+
+  DeS_DDE_Notes: &DeS_DDE_Notes
+    "Can disable Write Color Buffers for 20% faster performance. Please note this patch gives a slightly darker tone to the game."
+
+  DeS_AR_Notes: &DeS_AR_Notes
+    "Requires \"Stretch To Display Area\" checked in the GPU settings. UI elements will be stretched."
+
+  DeS_AR_Configurable_Values: &DeS_AR_Configurable_Values
+    "Aspect Ratio":
+      Type: double_enum
+      Value: &32_9_value 3.555555555555556
+      Allowed Values:
+        "32:9": *32_9_value
+        "21:9 (3840x1600)": 2.4
+        "21:9 (3440x1440)": 2.388888888888889
+        "21:9 (2560x1080)": 2.37037037037037
+        "16:10": 1.6
+        "4:3": 1.333333333333333
+        "5:4": 1.25
+
+  BLUS30443_FreeCam: &BLUS30443_FreeCam
+  # Thanks to Meow for original DS1 code
+    - [ be32, 0x0014422c, 0x480db26d ] # branch to hork's cave
+    - [ be32, 0x0021f498, 0xf821ff61 ]
+    - [ be32, 0x0021f49c, 0x7c0802a6 ]
+    - [ be32, 0x0021f4a0, 0xf80100b0 ]
+    - [ be32, 0x0021f4a4, 0x38600000 ]
+    - [ be32, 0x0021f4a8, 0x4bfa5639 ] # PadMan::GetPadDeviceForIdx
+    - [ be32, 0x0021f4ac, 0x60000000 ]
+    - [ be32, 0x0021f4b0, 0x813e203c ]
+    - [ be32, 0x0021f4b4, 0x38000000 ]
+    - [ be32, 0x0021f4b8, 0x91210090 ]
+    - [ be32, 0x0021f4bc, 0x90610094 ]
+    - [ be32, 0x0021f4c0, 0x90010098 ]
+    - [ be32, 0x0021f4c4, 0x81630004 ]
+    - [ be32, 0x0021f4c8, 0xa06b0120 ]
+    - [ be32, 0x0021f4cc, 0x7863bfe2 ]
+    - [ be32, 0x0021f4d0, 0x60000000 ]
+    - [ be32, 0x0021f4d4, 0x5463063e ]
+    - [ be32, 0x0021f4d8, 0x2f830000 ]
+    - [ be32, 0x0021f4dc, 0x419e0034 ]
+    - [ be32, 0x0021f4e0, 0xa00b011e ]
+    - [ be32, 0x0021f4e4, 0x2f80000a ]
+    - [ be32, 0x0021f4e8, 0x409e0028 ]
+    - [ be32, 0x0021f4ec, 0x813f0034 ]
+    - [ be32, 0x0021f4f0, 0x800901fc ]
+    - [ be32, 0x0021f4f4, 0x38600001 ]
+    - [ be32, 0x0021f4f8, 0x7c001a14 ]
+    - [ be32, 0x0021f4fc, 0x900901fc ]
+    - [ be32, 0x0021f500, 0x2f800004 ]
+    - [ be32, 0x0021f504, 0x409e000c ]
+    - [ be32, 0x0021f508, 0x38000000 ]
+    - [ be32, 0x0021f50c, 0x900901fc ]
+    - [ be32, 0x0021f510, 0x813f0034 ]
+    - [ be32, 0x0021f514, 0x800901fc ]
+    - [ be32, 0x0021f518, 0x2f800001 ]
+    - [ be32, 0x0021f51c, 0x419e005c ]
+    - [ be32, 0x0021f520, 0x2f800002 ]
+    - [ be32, 0x0021f524, 0x419e007c ]
+    - [ be32, 0x0021f528, 0x2f800003 ]
+    - [ be32, 0x0021f52c, 0x419e0080 ]
+    - [ be32, 0x0021f530, 0x80690204 ]
+    - [ be32, 0x0021f534, 0x80890008 ]
+    - [ be32, 0x0021f538, 0x38630010 ]
+    - [ be32, 0x0021f53c, 0x38840010 ]
+    - [ be32, 0x0021f540, 0x38a00010 ]
+    - [ be32, 0x0021f544, 0x38c00020 ]
+    - [ be32, 0x0021f548, 0x38e00030 ]
+    - [ be32, 0x0021f54c, 0x7c2020ce ]
+    - [ be32, 0x0021f550, 0x7c2019ce ]
+    - [ be32, 0x0021f554, 0x7c2428ce ]
+    - [ be32, 0x0021f558, 0x7c2329ce ]
+    - [ be32, 0x0021f55c, 0x7c2430ce ]
+    - [ be32, 0x0021f560, 0x7c2331ce ]
+    - [ be32, 0x0021f564, 0x7c2438ce ]
+    - [ be32, 0x0021f568, 0x7c2339ce ]
+    - [ be32, 0x0021f56c, 0x9b7f0058 ]
+    - [ be32, 0x0021f570, 0x9b7f0059 ]
+    - [ be32, 0x0021f574, 0x480000a0 ]
+    - [ be32, 0x0021f578, 0xa06b0122 ]
+    - [ be32, 0x0021f57c, 0x7863e7e2 ]
+    - [ be32, 0x0021f580, 0x5463063e ]
+    - [ be32, 0x0021f584, 0x2f830000 ]
+    - [ be32, 0x0021f588, 0x419e0008 ]
+    - [ be32, 0x0021f58c, 0x48000014 ]
+    - [ be32, 0x0021f590, 0x38000001 ]
+    - [ be32, 0x0021f594, 0x981f0058 ]
+    - [ be32, 0x0021f598, 0x981f0059 ]
+    - [ be32, 0x0021f59c, 0x48000058 ]
+    - [ be32, 0x0021f5a0, 0x9b7f0058 ]
+    - [ be32, 0x0021f5a4, 0x9b7f0059 ]
+    - [ be32, 0x0021f5a8, 0x4800004c ]
+    - [ be32, 0x0021f5ac, 0x8069000c ]
+    - [ be32, 0x0021f5b0, 0x80890204 ]
+    - [ be32, 0x0021f5b4, 0x38630010 ]
+    - [ be32, 0x0021f5b8, 0x38840010 ]
+    - [ be32, 0x0021f5bc, 0x38a00010 ]
+    - [ be32, 0x0021f5c0, 0x38c00020 ]
+    - [ be32, 0x0021f5c4, 0x38e00030 ]
+    - [ be32, 0x0021f5c8, 0x7c2020ce ]
+    - [ be32, 0x0021f5cc, 0x7c2019ce ]
+    - [ be32, 0x0021f5d0, 0x7c2428ce ]
+    - [ be32, 0x0021f5d4, 0x7c2329ce ]
+    - [ be32, 0x0021f5d8, 0x7c2430ce ]
+    - [ be32, 0x0021f5dc, 0x7c2331ce ]
+    - [ be32, 0x0021f5e0, 0x7c2438ce ]
+    - [ be32, 0x0021f5e4, 0x7c2339ce ]
+    - [ be32, 0x0021f5e8, 0x9b7f0058 ]
+    - [ be32, 0x0021f5ec, 0x9b7f0059 ]
+    - [ be32, 0x0021f5f0, 0x48000024 ]
+    - [ be32, 0x0021f5f4, 0x38000001 ]
+    - [ be32, 0x0021f5f8, 0x901f0044 ]
+    - [ be32, 0x0021f5fc, 0x38c00000 ]
+    - [ be32, 0x0021f600, 0x38a00000 ]
+    - [ be32, 0x0021f604, 0x80810094 ]
+    - [ be32, 0x0021f608, 0x80690204 ]
+    - [ be32, 0x0021f60c, 0x4bf0bced ] # DbgCamControls
+    - [ be32, 0x0021f610, 0x60000000 ]
+    - [ be32, 0x0021f614, 0x80610094 ]
+    - [ be32, 0x0021f618, 0xe80100b0 ]
+    - [ be32, 0x0021f61c, 0x7c0803a6 ]
+    - [ be32, 0x0021f620, 0x382100a0 ]
+    - [ be32, 0x0021f624, 0x4e800020 ]
+
+  BLES00932_FreeCam: &BLES00932_FreeCam
+    - [ be32, 0x001451f4, 0x480db12d ] # branch to hork's cave
+    - [ be32, 0x00220320, 0xf821ff61 ]
+    - [ be32, 0x00220324, 0x7c0802a6 ]
+    - [ be32, 0x00220328, 0xf80100b0 ]
+    - [ be32, 0x0022032c, 0x38600000 ]
+    - [ be32, 0x00220330, 0x4bfa5639 ] # PadMan::GetPadDeviceForIdx
+    - [ be32, 0x00220334, 0x60000000 ]
+    - [ be32, 0x00220338, 0x813e203c ]
+    - [ be32, 0x0022033c, 0x38000000 ]
+    - [ be32, 0x00220340, 0x91210090 ]
+    - [ be32, 0x00220344, 0x90610094 ]
+    - [ be32, 0x00220348, 0x90010098 ]
+    - [ be32, 0x0022034c, 0x81630004 ]
+    - [ be32, 0x00220350, 0xa06b0120 ]
+    - [ be32, 0x00220354, 0x7863bfe2 ]
+    - [ be32, 0x00220358, 0x60000000 ]
+    - [ be32, 0x0022035c, 0x5463063e ]
+    - [ be32, 0x00220360, 0x2f830000 ]
+    - [ be32, 0x00220364, 0x419e0034 ]
+    - [ be32, 0x00220368, 0xa00b011e ]
+    - [ be32, 0x0022036c, 0x2f80000a ]
+    - [ be32, 0x00220370, 0x409e0028 ]
+    - [ be32, 0x00220374, 0x813f0034 ]
+    - [ be32, 0x00220378, 0x800901fc ]
+    - [ be32, 0x0022037c, 0x38600001 ]
+    - [ be32, 0x00220380, 0x7c001a14 ]
+    - [ be32, 0x00220384, 0x900901fc ]
+    - [ be32, 0x00220388, 0x2f800004 ]
+    - [ be32, 0x0022038c, 0x409e000c ]
+    - [ be32, 0x00220390, 0x38000000 ]
+    - [ be32, 0x00220394, 0x900901fc ]
+    - [ be32, 0x00220398, 0x813f0034 ]
+    - [ be32, 0x0022039c, 0x800901fc ]
+    - [ be32, 0x002203a0, 0x2f800001 ]
+    - [ be32, 0x002203a4, 0x419e005c ]
+    - [ be32, 0x002203a8, 0x2f800002 ]
+    - [ be32, 0x002203ac, 0x419e007c ]
+    - [ be32, 0x002203b0, 0x2f800003 ]
+    - [ be32, 0x002203b4, 0x419e0080 ]
+    - [ be32, 0x002203b8, 0x80690204 ]
+    - [ be32, 0x002203bc, 0x80890008 ]
+    - [ be32, 0x002203c0, 0x38630010 ]
+    - [ be32, 0x002203c4, 0x38840010 ]
+    - [ be32, 0x002203c8, 0x38a00010 ]
+    - [ be32, 0x002203cc, 0x38c00020 ]
+    - [ be32, 0x002203d0, 0x38e00030 ]
+    - [ be32, 0x002203d4, 0x7c2020ce ]
+    - [ be32, 0x002203d8, 0x7c2019ce ]
+    - [ be32, 0x002203dc, 0x7c2428ce ]
+    - [ be32, 0x002203e0, 0x7c2329ce ]
+    - [ be32, 0x002203e4, 0x7c2430ce ]
+    - [ be32, 0x002203e8, 0x7c2331ce ]
+    - [ be32, 0x002203ec, 0x7c2438ce ]
+    - [ be32, 0x002203f0, 0x7c2339ce ]
+    - [ be32, 0x002203f4, 0x9b7f0058 ]
+    - [ be32, 0x002203f8, 0x9b7f0059 ]
+    - [ be32, 0x002203fc, 0x480000a0 ]
+    - [ be32, 0x00220400, 0xa06b0122 ]
+    - [ be32, 0x00220404, 0x7863e7e2 ]
+    - [ be32, 0x00220408, 0x5463063e ]
+    - [ be32, 0x0022040c, 0x2f830000 ]
+    - [ be32, 0x00220410, 0x419e0008 ]
+    - [ be32, 0x00220414, 0x48000014 ]
+    - [ be32, 0x00220418, 0x38000001 ]
+    - [ be32, 0x0022041c, 0x981f0058 ]
+    - [ be32, 0x00220420, 0x981f0059 ]
+    - [ be32, 0x00220424, 0x48000058 ]
+    - [ be32, 0x00220428, 0x9b7f0058 ]
+    - [ be32, 0x0022042c, 0x9b7f0059 ]
+    - [ be32, 0x00220430, 0x4800004c ]
+    - [ be32, 0x00220434, 0x8069000c ]
+    - [ be32, 0x00220438, 0x80890204 ]
+    - [ be32, 0x0022043c, 0x38630010 ]
+    - [ be32, 0x00220440, 0x38840010 ]
+    - [ be32, 0x00220444, 0x38a00010 ]
+    - [ be32, 0x00220448, 0x38c00020 ]
+    - [ be32, 0x0022044c, 0x38e00030 ]
+    - [ be32, 0x00220450, 0x7c2020ce ]
+    - [ be32, 0x00220454, 0x7c2019ce ]
+    - [ be32, 0x00220458, 0x7c2428ce ]
+    - [ be32, 0x0022045c, 0x7c2329ce ]
+    - [ be32, 0x00220460, 0x7c2430ce ]
+    - [ be32, 0x00220464, 0x7c2331ce ]
+    - [ be32, 0x00220468, 0x7c2438ce ]
+    - [ be32, 0x0022046c, 0x7c2339ce ]
+    - [ be32, 0x00220470, 0x9b7f0058 ]
+    - [ be32, 0x00220474, 0x9b7f0059 ]
+    - [ be32, 0x00220478, 0x48000024 ]
+    - [ be32, 0x0022047c, 0x38000001 ]
+    - [ be32, 0x00220480, 0x901f0044 ]
+    - [ be32, 0x00220484, 0x38c00000 ]
+    - [ be32, 0x00220488, 0x38a00000 ]
+    - [ be32, 0x0022048c, 0x80810094 ]
+    - [ be32, 0x00220490, 0x80690204 ]
+    - [ be32, 0x00220494, 0x4bf0be2d ] # DbgCamControls
+    - [ be32, 0x00220498, 0x60000000 ]
+    - [ be32, 0x0022049c, 0x80610094 ]
+    - [ be32, 0x002204a0, 0xe80100b0 ]
+    - [ be32, 0x002204a4, 0x7c0803a6 ]
+    - [ be32, 0x002204a8, 0x382100a0 ]
+    - [ be32, 0x002204ac, 0x4e800020 ]
+
+  BCAS20071_FreeCam: &BCAS20071_FreeCam
+    - [ be32, 0x00142304, 0x480db26d ] # branch to hork's cave
+    - [ be32, 0x0021d570, 0xf821ff61 ]
+    - [ be32, 0x0021d574, 0x7c0802a6 ]
+    - [ be32, 0x0021d578, 0xf80100b0 ]
+    - [ be32, 0x0021d57c, 0x38600000 ]
+    - [ be32, 0x0021d580, 0x4bfa5639 ] # PadMan::GetPadDeviceForIdx
+    - [ be32, 0x0021d584, 0x60000000 ]
+    - [ be32, 0x0021d588, 0x813e203c ]
+    - [ be32, 0x0021d58c, 0x38000000 ]
+    - [ be32, 0x0021d590, 0x91210090 ]
+    - [ be32, 0x0021d594, 0x90610094 ]
+    - [ be32, 0x0021d598, 0x90010098 ]
+    - [ be32, 0x0021d59c, 0x81630004 ]
+    - [ be32, 0x0021d5a0, 0xa06b0120 ]
+    - [ be32, 0x0021d5a4, 0x7863bfe2 ]
+    - [ be32, 0x0021d5a8, 0x60000000 ]
+    - [ be32, 0x0021d5ac, 0x5463063e ]
+    - [ be32, 0x0021d5b0, 0x2f830000 ]
+    - [ be32, 0x0021d5b4, 0x419e0034 ]
+    - [ be32, 0x0021d5b8, 0xa00b011e ]
+    - [ be32, 0x0021d5bc, 0x2f80000a ]
+    - [ be32, 0x0021d5c0, 0x409e0028 ]
+    - [ be32, 0x0021d5c4, 0x813f0034 ]
+    - [ be32, 0x0021d5c8, 0x800901fc ]
+    - [ be32, 0x0021d5cc, 0x38600001 ]
+    - [ be32, 0x0021d5d0, 0x7c001a14 ]
+    - [ be32, 0x0021d5d4, 0x900901fc ]
+    - [ be32, 0x0021d5d8, 0x2f800004 ]
+    - [ be32, 0x0021d5dc, 0x409e000c ]
+    - [ be32, 0x0021d5e0, 0x38000000 ]
+    - [ be32, 0x0021d5e4, 0x900901fc ]
+    - [ be32, 0x0021d5e8, 0x813f0034 ]
+    - [ be32, 0x0021d5ec, 0x800901fc ]
+    - [ be32, 0x0021d5f0, 0x2f800001 ]
+    - [ be32, 0x0021d5f4, 0x419e005c ]
+    - [ be32, 0x0021d5f8, 0x2f800002 ]
+    - [ be32, 0x0021d5fc, 0x419e007c ]
+    - [ be32, 0x0021d600, 0x2f800003 ]
+    - [ be32, 0x0021d604, 0x419e0080 ]
+    - [ be32, 0x0021d608, 0x80690204 ]
+    - [ be32, 0x0021d60c, 0x80890008 ]
+    - [ be32, 0x0021d610, 0x38630010 ]
+    - [ be32, 0x0021d614, 0x38840010 ]
+    - [ be32, 0x0021d618, 0x38a00010 ]
+    - [ be32, 0x0021d61c, 0x38c00020 ]
+    - [ be32, 0x0021d620, 0x38e00030 ]
+    - [ be32, 0x0021d624, 0x7c2020ce ]
+    - [ be32, 0x0021d628, 0x7c2019ce ]
+    - [ be32, 0x0021d62c, 0x7c2428ce ]
+    - [ be32, 0x0021d630, 0x7c2329ce ]
+    - [ be32, 0x0021d634, 0x7c2430ce ]
+    - [ be32, 0x0021d638, 0x7c2331ce ]
+    - [ be32, 0x0021d63c, 0x7c2438ce ]
+    - [ be32, 0x0021d640, 0x7c2339ce ]
+    - [ be32, 0x0021d644, 0x9b7f0058 ]
+    - [ be32, 0x0021d648, 0x9b7f0059 ]
+    - [ be32, 0x0021d64c, 0x480000a0 ]
+    - [ be32, 0x0021d650, 0xa06b0122 ]
+    - [ be32, 0x0021d654, 0x7863e7e2 ]
+    - [ be32, 0x0021d658, 0x5463063e ]
+    - [ be32, 0x0021d65c, 0x2f830000 ]
+    - [ be32, 0x0021d660, 0x419e0008 ]
+    - [ be32, 0x0021d664, 0x48000014 ]
+    - [ be32, 0x0021d668, 0x38000001 ]
+    - [ be32, 0x0021d66c, 0x981f0058 ]
+    - [ be32, 0x0021d670, 0x981f0059 ]
+    - [ be32, 0x0021d674, 0x48000058 ]
+    - [ be32, 0x0021d678, 0x9b7f0058 ]
+    - [ be32, 0x0021d67c, 0x9b7f0059 ]
+    - [ be32, 0x0021d680, 0x4800004c ]
+    - [ be32, 0x0021d684, 0x8069000c ]
+    - [ be32, 0x0021d688, 0x80890204 ]
+    - [ be32, 0x0021d68c, 0x38630010 ]
+    - [ be32, 0x0021d690, 0x38840010 ]
+    - [ be32, 0x0021d694, 0x38a00010 ]
+    - [ be32, 0x0021d698, 0x38c00020 ]
+    - [ be32, 0x0021d69c, 0x38e00030 ]
+    - [ be32, 0x0021d6a0, 0x7c2020ce ]
+    - [ be32, 0x0021d6a4, 0x7c2019ce ]
+    - [ be32, 0x0021d6a8, 0x7c2428ce ]
+    - [ be32, 0x0021d6ac, 0x7c2329ce ]
+    - [ be32, 0x0021d6b0, 0x7c2430ce ]
+    - [ be32, 0x0021d6b4, 0x7c2331ce ]
+    - [ be32, 0x0021d6b8, 0x7c2438ce ]
+    - [ be32, 0x0021d6bc, 0x7c2339ce ]
+    - [ be32, 0x0021d6c0, 0x9b7f0058 ]
+    - [ be32, 0x0021d6c4, 0x9b7f0059 ]
+    - [ be32, 0x0021d6c8, 0x48000024 ]
+    - [ be32, 0x0021d6cc, 0x38000001 ]
+    - [ be32, 0x0021d6d0, 0x901f0044 ]
+    - [ be32, 0x0021d6d4, 0x38c00000 ]
+    - [ be32, 0x0021d6d8, 0x38a00000 ]
+    - [ be32, 0x0021d6dc, 0x80810094 ]
+    - [ be32, 0x0021d6e0, 0x80690204 ]
+    - [ be32, 0x0021d6e4, 0x4bf0bced ] # DbgCamControls
+    - [ be32, 0x0021d6e8, 0x60000000 ]
+    - [ be32, 0x0021d6ec, 0x80610094 ]
+    - [ be32, 0x0021d6f0, 0xe80100b0 ]
+    - [ be32, 0x0021d6f4, 0x7c0803a6 ]
+    - [ be32, 0x0021d6f8, 0x382100a0 ]
+    - [ be32, 0x0021d6fc, 0x4e800020 ]
+
+  FreeCam_Notes: &FreeCam_Notes
+    "Activate and cycle through modes with X + L3. Advance frames in time stop mode with Cross. L2/R2 to move down/up, L1/R1 to slow down/speed up movement."
+
+  des_US100title: &des_US100title
+    "Demon's Souls":
+      BLUS30443: [ 01.00 ]
+
+  des_EU100title: &des_EU100title
+    "Demon's Souls":
+      BLES00932: [ 01.00 ]
+
+  des_AS104title: &des_AS104title
+    "Demon's Souls":
+      BCAS20071: [ 01.04 ]
+
+  des_USDemo101title: &des_USDemo101title
+    "Demon's Souls Trade Demo":
+      BLUD80018: [ 01.01 ]
+
+  des_JP104title: &des_JP104title
+    "Demon's Souls":
+      BCJS30022: [ 01.04 ]
+
+PPU-83681f6110d33442329073b72b8dc88a2f677172:
+  "Unlock FPS":
+    Games: *des_US100title
+    Author: "Whatcookie, Gibbed"
+    Notes: *DeS_FPS_Notes
+    Patch Version: 2.1
+    Patch:
+      - [ load, *BLUS30443_FpsUnlock ]
+  "Skip Intro Videos":
+    Games: *des_US100title
+    Author: "GalCiv"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ be32, 0x008eef78, 0x38000003 ] # Intro logos skip
+      - [ be32, 0x008eef7c, 0x901c0100 ]
+  "Aspect Ratio":
+    Games: *des_US100title
+    Author: "Whatcookie"
+    Notes: *DeS_AR_Notes
+    Configurable Values: *DeS_AR_Configurable_Values
+    Patch Version: 1.0
+    Patch:
+      - [ bef32, 0x018cefbc, "Aspect Ratio" ]
+      - [ bef32, 0x0190433c, "Aspect Ratio" ]
+  "Aspect ratio (HUD/Menus) 32:9":
+    Games:
+      "Demon's Souls":
+        BLUS30443: [01.00]
+    Author: "Pierre"
+    Patch Version: 1.0
+    Group: "Aspect ratio (HUD/Menus)"
+    Notes: "Requires the \"Aspect Ratio\" patch to be enabled as well as the \"Stretch To Display Area\" checked in the GPU settings. Centers HUD/menus by offsetting the UI quad while using the wider UI width."
+    Patch:
+      - [be32, 0x018F0174, 0x44F00000]   # R = 1920.0f
+      - [be32, 0x00718CFC, 0x3D40C420]   # lis r10,0xC420  -> L = -640.0f
+      - [be32, 0x00718D68, 0x914B0000]   # stw r10,0(r11)
+  "Aspect ratio (HUD/Menus) 21:9 (3840x1600)":
+    Games:
+      "Demon's Souls":
+        BLUS30443: [01.00]
+    Author: "Pierre"
+    Patch Version: 1.0
+    Group: "Aspect ratio (HUD/Menus)"
+    Notes: "Requires the \"Aspect Ratio\" patch to be enabled as well as the \"Stretch To Display Area\" checked in the GPU settings. Centers HUD/menus by offsetting the UI quad while using the wider UI width."
+    Patch:
+      - [be32, 0x018F0174, 0x44BC0000]   # R = 1504.0f
+      - [be32, 0x00718CFC, 0x3D40C360]   # lis r10,0xC360  -> L = -224.0f
+      - [be32, 0x00718D68, 0x914B0000]   # stw r10,0(r11)
+  "Aspect ratio (HUD/Menus) 21:9 (3440x1440)":
+    Games:
+      "Demon's Souls":
+        BLUS30443: [01.00]
+    Author: "Pierre"
+    Patch Version: 1.0
+    Group: "Aspect ratio (HUD/Menus)"
+    Notes: "Requires the \"Aspect Ratio\" patch to be enabled as well as the \"Stretch To Display Area\" checked in the GPU settings. Centers HUD/menus by offsetting the UI quad while using the wider UI width."
+    Patch:
+      - [be32, 0x018F0174, 0x44BB8000]   # R = 1500.0f
+      - [be32, 0x00718CFC, 0x3D40C35C]   # lis r10,0xC35C  -> L = -220.0f
+      - [be32, 0x00718D68, 0x914B0000]   # stw r10,0(r11)
+  "Aspect ratio (HUD/Menus) 21:9 (2560x1080)":
+    Games:
+      "Demon's Souls":
+        BLUS30443: [01.00]
+    Author: "Pierre"
+    Patch Version: 1.0
+    Group: "Aspect ratio (HUD/Menus)"
+    Notes: "Requires the \"Aspect Ratio\" patch to be enabled as well as the \"Stretch To Display Area\" checked in the GPU settings. Centers HUD/menus by offsetting the UI quad while using the wider UI width."
+    Patch:
+      - [be32, 0x018F0174, 0x44BAAAAB]   # R = 1493.33337f
+      - [be32, 0x00718CFC, 0x3D40C355]   # lis r10,0xC355  -> L ≈ -213.0f (rounded)
+      - [be32, 0x00718D68, 0x914B0000]   # stw r10,0(r11)
+  "Disable Motion Blur":
+    Games: *des_US100title
+    Author: "illusion"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ byte, 0x00217e7c, 0x41 ]
+  "Enable FreeCam":
+    Games: *des_US100title
+    Author: "horkrux"
+    Notes: *FreeCam_Notes
+    Patch Version: 1.0
+    Patch:
+      - [ load, *BLUS30443_FreeCam ]
+
+PPU-5446a2645880eefa75f7e374abd6b7818511e2ef:
+  "Unlock FPS":
+    Games: *des_EU100title
+    Author: "Whatcookie, Gibbed"
+    Notes: *DeS_FPS_Notes
+    Patch Version: 2.1
+    Patch:
+      - [ load, *BLES00932_FpsUnlock ]
+  "Skip Intro Videos":
+    Games: *des_EU100title
+    Author: "GalCiv"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ be32, 0x008f0928, 0x38000003 ] # Intro logos skip
+      - [ be32, 0x008f092c, 0x901c0100 ]
+  "Aspect Ratio":
+    Games: *des_EU100title
+    Author: "Whatcookie"
+    Notes: *DeS_AR_Notes
+    Configurable Values: *DeS_AR_Configurable_Values
+    Patch Version: 1.0
+    Patch:
+      - [ bef32, 0x018cf13c, "Aspect Ratio" ]
+      - [ bef32, 0x01904494, "Aspect Ratio" ]
+  "Disable Motion Blur":
+    Games: *des_EU100title
+    Author: "illusion"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ byte, 0x00218d04, 0x41 ]
+  "Enable FreeCam":
+    Games: *des_EU100title
+    Author: "horkrux"
+    Notes: *FreeCam_Notes
+    Patch Version: 1.0
+    Patch:
+      - [ load, *BLES00932_FreeCam ]
+
+PPU-9403fe1678487def5d7f3c380b4c4fb275035378:
+  "Unlock FPS":
+    Games: *des_AS104title
+    Author: "Whatcookie, Gibbed, KokutouKiritsugu port to BCAS20071"
+    Notes: *DeS_FPS_Notes
+    Patch Version: 2.1
+    Patch:
+      - [ load, *BCAS20071_FpsUnlock ]
+  "Skip Intro Videos":
+    Games: *des_AS104title
+    Author: "GalCiv, KokutouKiritsugu port to BCAS20071"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ be32, 0x008efecc, 0x38000003 ] # Intro logos skip
+      - [ be32, 0x008efed0, 0x901c0100 ]
+  "Aspect Ratio":
+    Games: *des_AS104title
+    Author: "Whatcookie, KokutouKiritsugu port to BCAS20071"
+    Notes: *DeS_AR_Notes
+    Configurable Values: *DeS_AR_Configurable_Values
+    Patch Version: 1.0
+    Patch:
+      - [ bef32, 0x018cee14, "Aspect Ratio" ]
+      - [ bef32, 0x0190430c, "Aspect Ratio" ]
+  "Disable Motion Blur":
+    Games: *des_AS104title
+    Author: "illusion, KokutouKiritsugu port to BCAS20071"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ byte, 0x00215f54, 0x41 ]
+  "Enable FreeCam":
+    Games: *des_AS104title
+    Author: "horkrux"
+    Notes: *FreeCam_Notes
+    Patch Version: 1.0
+    Patch:
+      - [ load, *BCAS20071_FreeCam ]
+
+PPU-f965a746d844cd0c572a7e8731b5b3b7a81f7bdd:
+  "Unlock FPS":
+    Games: *des_USDemo101title
+    Author: "Whatcookie, Gibbed"
+    Notes: *DeS_FPS_Notes
+    Patch Version: 2.1
+    Patch:
+      - [ load, *BLUS30443_FpsUnlock ]
+  "Skip Intro Videos":
+    Games: *des_USDemo101title
+    Author: "GalCiv"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ be32, 0x008eef78, 0x38000003 ] # Intro logos skip
+      - [ be32, 0x008eef7c, 0x901c0100 ]
+  "Aspect Ratio":
+    Games: *des_USDemo101title
+    Author: "Whatcookie"
+    Notes: *DeS_AR_Notes
+    Configurable Values: *DeS_AR_Configurable_Values
+    Patch Version: 1.0
+    Patch:
+      - [ bef32, 0x018cefbc, "Aspect Ratio" ]
+      - [ bef32, 0x0190433c, "Aspect Ratio" ]
+  "Disable Motion Blur":
+    Games: *des_USDemo101title
+    Author: "illusion"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ byte, 0x00217e7c, 0x41 ]
+  "Enable FreeCam":
+    Games: *des_USDemo101title
+    Author: "horkrux"
+    Notes: *FreeCam_Notes
+    Patch Version: 1.0
+    Patch:
+      - [ load, *BLUS30443_FreeCam ]
+
+PPU-68544b29e92609ccb2710f485ae7708e4cb35df1:
+  "Unlock FPS":
+    Games: *des_JP104title
+    Author: "Whatcookie, Gibbed"
+    Notes: *DeS_FPS_Notes
+    Patch Version: 2.1
+    Patch:
+      - [ load, *BCJS30022_FpsUnlock ]
+  "Skip Intro Videos":
+    Games: *des_JP104title
+    Author: "GalCiv"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ be32, 0x008efe54, 0x38000003 ] # Intro logos skip
+      - [ be32, 0x008efe58, 0x901c0100 ]
+  "Aspect Ratio":
+    Games: *des_JP104title
+    Author: "Whatcookie"
+    Notes: *DeS_AR_Notes
+    Configurable Values: *DeS_AR_Configurable_Values
+    Patch Version: 1.0
+    Patch:
+      - [ bef32, 0x018cee14, "Aspect Ratio" ]
+      - [ bef32, 0x0190430c, "Aspect Ratio" ]
+  "Disable Motion Blur":
+    Games: *des_JP104title
+    Author: "illusion"
+    Notes:
+    Patch Version: 1.0
+    Patch:
+      - [ byte, 0x00215edc, 0x41 ]

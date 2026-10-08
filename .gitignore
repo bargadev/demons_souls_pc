@@ -129,3 +129,7 @@ CMakeUserPresets.json
 
 # claude
 CLAUDE.md
+
+# Demon's Souls packaging
+/out/
+__pycache__/

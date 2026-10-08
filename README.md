@@ -24,13 +24,26 @@ project builds on it instead of starting over.
 2. **Single-game mode:** the executable boots the Demon's Souls `EBOOT.BIN` directly, with no
    game list and no emulator UI.
 3. **Preset configuration:** tuned PPU/SPU/RSX settings, resolution scaling, and the 60 FPS
-   patch (Vblank 120, clocks scale 200) enabled out of the box.
-4. **Launcher:** choose the game folder and firmware, FPS 30/60, output resolution, effects
-   toggles (through patches), controller and keyboard bindings.
-5. **Fixes and extras:** sped-up pre-rendered cutscenes at 60 FPS, movement bug above 60 FPS,
-   FSR 1 / CAS sharpening, community online server support.
+   patch enabled out of the box. *(done: launcher writes a config override and
+   `patch_config.yml`)*
+4. **Launcher:** choose the game folder, install the firmware, FPS 30/60, output resolution,
+   FSR 1 + sharpening, aspect ratio (21:9, 32:9), skip intro, motion blur. *(done, English and
+   Portuguese)*
+5. **Fixes and extras:** physics above 60 FPS, community online server support, controller
+   setup inside the launcher.
 6. **Packaging:** one zip with the game executable and launcher; firmware and game supplied by
-   the user.
+   the user. *(script done: `demons_souls/packaging/package.ps1`)*
+
+Details, layout and build steps: [demons_souls/README.md](demons_souls/README.md).
+
+## How to play (once a release is out)
+
+1. Unpack the zip and start `Demons Souls.exe`.
+2. Choose your game folder (the one with `PS3_GAME`).
+3. **Install firmware...** and pick `PS3UPDAT.PUP`.
+4. Press **PLAY**.
+
+Do not install game updates: the patches match the original disc versions only.
 
 ## Branches
 
