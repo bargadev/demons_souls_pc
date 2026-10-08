@@ -11,6 +11,7 @@ Everything specific to the Demon's Souls build. The rest of the repository is RP
 | `launcher/tests/` | Unit tests (standard library `unittest`) |
 | `patches/patch.yml` | Demon's Souls section of the RPCS3 patch database |
 | `tools/update_patches.py` | Refreshes `patches/patch.yml` from rpcs3.net |
+| `packaging/build.ps1` | Builds RPCS3 with MSBuild (`rpcs3.sln`, Release x64) |
 | `packaging/package.ps1` | Builds the player zip from an RPCS3 build |
 | `packaging/README-Windows.txt` | Player instructions shipped in the zip |
 
@@ -45,9 +46,13 @@ Requirements (from [BUILDING.md](../BUILDING.md)):
 
 ```powershell
 git submodule update --init --recursive
-.\scripts\win_build.ps1                      # RPCS3 -> build\bin\rpcs3.exe
-.\demons_souls\packaging\package.ps1         # -> out\DemonsSouls-windows-x64.zip
+# Precompiled LLVM (saves hours): extract into build\lib_ext\Release-x64
+#   https://github.com/RPCS3/llvm-mirror/releases/download/custom-build-win-22.1.8/llvmlibs_mt.7z
+.\demons_souls\packaging\build.ps1 -Package  # rpcs3.sln Release -> bin\rpcs3.exe -> out\DemonsSouls-windows-x64.zip
 ```
+
+`scripts\win_build.ps1` (CMake + Ninja, output in `build\bin`) also works, but it compiles
+LLVM from source; `package.ps1` finds either output.
 
 Launcher during development, against an RPCS3 build:
 
