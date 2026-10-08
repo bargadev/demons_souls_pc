@@ -1,48 +1,48 @@
-RPCS3
-=====
+# Demon's Souls for Windows
 
-[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/RPCS3/rpcs3/rpcs3.yml?branch=master&logo=github&label=Actions)](https://github.com/RPCS3/rpcs3/actions/workflows/rpcs3.yml)
-[![RPCS3 Discord Server](https://img.shields.io/discord/272035812277878785?color=5865F2&label=RPCS3%20Discord&logo=discord&logoColor=white)](https://discord.gg/rpcs3)
+**Work in progress.** A single-game build of [RPCS3](https://github.com/RPCS3/rpcs3) focused on
+Demon's Souls (PS3): boots straight into the game, ships with the right settings and community
+patches, and gets its own launcher, in the spirit of
+[bloodborne_pc](https://github.com/bargadev/bloodborne_pc).
 
-The world's first free and open-source PlayStation 3 emulator/debugger, written in C++ for Windows, Linux, macOS and FreeBSD.
+> **No game files or PS3 firmware are included.** You need your own disc dump of Demon's Souls
+> (BLUS30443 US or BLES00932 EU; PSN versions are not supported) and the official
+> `PS3UPDAT.PUP` firmware.
+> This project is not affiliated with Sony Interactive Entertainment, FromSoftware or the
+> RPCS3 team.
 
-You can find some basic information on our [**website**](https://rpcs3.net/). Game info is being populated on the [**Wiki**](https://wiki.rpcs3.net/).
-For discussion about this emulator, PS3 emulation, and game compatibility reports, please visit our [**forums**](https://forums.rpcs3.net) and our [**Discord server**](https://discord.gg/RPCS3).
+## Why not a "native" port like Bloodborne?
 
-[**Support the Lead Developers on Patreon**](https://rpcs3.net/patreon)
+The PS4 has an x86-64 CPU, so Bloodborne's own code runs directly on a PC. The PS3 uses the
+Cell processor (a big-endian PowerPC core plus six SPUs) and the RSX GPU, so every instruction
+has to be translated. RPCS3 already does this well (LLVM recompilers for PPU and SPU), so this
+project builds on it instead of starting over.
 
-## Contributing
+## Roadmap
 
-If you want to help the project but do not code, the best way to help out is to test games and make bug reports. See:
-* [Quickstart](https://rpcs3.net/quickstart)
+1. **Build on Windows** from this fork (MSYS2/clang or Visual Studio 2022 + Qt 6).
+2. **Single-game mode:** the executable boots the Demon's Souls `EBOOT.BIN` directly, with no
+   game list and no emulator UI.
+3. **Preset configuration:** tuned PPU/SPU/RSX settings, resolution scaling, and the 60 FPS
+   patch (Vblank 120, clocks scale 200) enabled out of the box.
+4. **Launcher:** choose the game folder and firmware, FPS 30/60, output resolution, effects
+   toggles (through patches), controller and keyboard bindings.
+5. **Fixes and extras:** sped-up pre-rendered cutscenes at 60 FPS, movement bug above 60 FPS,
+   FSR 1 / CAS sharpening, community online server support.
+6. **Packaging:** one zip with the game executable and launcher; firmware and game supplied by
+   the user.
 
-If you want to contribute as a developer, please take a look at the following pages:
+## Branches
 
-* [Coding Style](https://github.com/RPCS3/rpcs3/wiki/Coding-Style)
-* [Developer Information](https://github.com/RPCS3/rpcs3/wiki/Developer-Information)
+- `demons_souls`: project work.
+- `master`: tracks upstream RPCS3 (`upstream` remote) for merges.
 
-You should also contact any of the developers in the forums or in the Discord server to learn more about the current state of the emulator.
+## Credits
 
-### AI Use
-
-Use of AI tools for research and reverse engineering purposes is permitted. However, contributors are expected to fully own and understand all code they submit. Any communication with the team — including code, code comments, and GitHub comments — must come from the human contributor, not an AI agent acting autonomously.
-
-We have unfortunately seen a rise in untested and unverified AI-generated slop being submitted to this project. This wastes maintainer time and, in worse cases, such changes get merged and break functionality for all users. Repeated violations will result in a ban from the repository. Please be respectful of everyone's time.
-
-**Pull requests opened by AI agents or automated tools must include a disclosure in the PR description** stating the scope of AI involvement — which parts were AI-generated and what human testing or review was performed prior to submission. PRs that omit this disclosure may be closed without review.
-
-If you are unsure about your work, open a discussion issue to talk it through with the team, or reach out to a maintainer on [Discord](https://discord.gg/RPCS3).
-
-## Building
-
-See [BUILDING.md](BUILDING.md) for more information about how to setup an environment to build RPCS3.
-
-## Running
-
-Check our friendly [quickstart](https://rpcs3.net/quickstart) guide to make sure your computer meets the minimum system requirements to run RPCS3.
-
-Don't forget to have your graphics driver up to date and to install the [Visual C++ Redistributable Packages for Visual Studio 2022](https://aka.ms/vs/17/release/VC_redist.x64.exe) if you are a Windows user.
+Built on [RPCS3](https://github.com/RPCS3/rpcs3) by the RPCS3 team. The original README is in
+[docs/original-readme](docs/original-readme/README.md). 60 FPS patch by Whatcookie.
 
 ## License
 
-Most files are licensed under the terms of GNU GPL-2.0-only License; see LICENSE file for details. Some files may be licensed differently; check appropriate file headers for details.
+GNU GPL v2 ([LICENSE](LICENSE)), same as RPCS3. Third-party components keep their own
+licenses.
